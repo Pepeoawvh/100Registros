@@ -1,6 +1,4 @@
 'use client';
-
-import { LibreBarcode } from "./ui/fonts";
 import Inicio from "./components/Inicio";
 
 export default function Home() {

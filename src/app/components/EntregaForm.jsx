@@ -1,8 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import { firestoreDB } from '../firebase/config.js';
-import { useAuth } from './context/authProvider.js';
-import { useEntregas } from './context/entregasProvider.js'; // Asegúrate de que la ruta sea correcta
+import { useAuth } from '../context/authProvider.js'; // Asegúrate de que la ruta sea correcta
+import { useEntregas } from '../context/entregasProvider.js'; // Asegúrate de que la ruta sea correcta
 
 const EntregaForm = () => {
   const [formData, setFormData] = useState({

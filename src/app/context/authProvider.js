@@ -1,6 +1,6 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '../../firebase/config'; // Asegúrate de que la ruta sea correcta
+import { auth } from '../firebase/config'; // Asegúrate de que la ruta sea correcta
 
 const AuthContext = createContext();
 

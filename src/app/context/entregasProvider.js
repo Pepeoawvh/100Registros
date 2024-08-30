@@ -1,6 +1,6 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { firestoreDB } from '../../firebase/config'; // Asegúrate de que la ruta sea correcta
+import { firestoreDB } from '../firebase/config'; // Asegúrate de que la ruta sea correcta
 import { useAuth } from './authProvider'; // Asegúrate de que la ruta sea correcta
 
 const EntregaContext = createContext();

@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from "react";
-import { useEntregas } from './context/entregasProvider.js'; // Asegúrate de que la ruta sea correcta
-import { useAuth } from './context/authProvider.js'; // Asegúrate de que la ruta sea correcta
+import { useEntregas } from '../context/entregasProvider.js'; // Asegúrate de que la ruta sea correcta
+import { useAuth } from '../context/authProvider.js'; // Asegúrate de que la ruta sea correcta
 import DeleteButton from './DeleteButton.js';
 
 const TablaResumen = () => {
@@ -30,7 +30,7 @@ const TablaResumen = () => {
     if (selectedMonth && currentUser) {
       fetchUserData(currentUser.uid); // Asegúrate de que esta función obtenga los datos del mes seleccionado
     }
-  }, [selectedMonth, currentUser]);
+  }, [selectedMonth, currentUser, fetchUserData]); // Agrega fetchUserData al array de dependencias
 
   useEffect(() => {
     if (selectedMonth) {

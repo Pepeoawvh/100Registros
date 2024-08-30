@@ -5,7 +5,7 @@ import "firebase/compat/auth";
 
 // Configuración de Firebase
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_API_KEY,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: "registros-7817f.firebaseapp.com",
   projectId: "registros-7817f",
   storageBucket: "registros-7817f.appspot.com",

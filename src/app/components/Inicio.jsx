@@ -31,9 +31,7 @@ const InicioContent = () => {
           LogIn
         </button>
       ) : (
-        <div className='animate-fade animate-duration-[2000ms]'>
-          <Login />
-        </div>
+        <Login />
       )}
     </div>
   );
