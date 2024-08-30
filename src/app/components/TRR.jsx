@@ -1,48 +1,48 @@
-'use client';
+'use client'
 import React, { useState, useEffect } from "react";
-import { useEntregas } from './context/entregasProvider.js'; // Asegúrate de que la ruta sea correcta
-import { useAuth } from './context/authProvider.js'; // Asegúrate de que la ruta sea correcta
-import DeleteButton from './DeleteButton.js';
+import { firestoreDB } from "../firebase/config.js";
 
 const TablaResumen = () => {
-  const { data, selectedMonth, setSelectedMonth, fetchUserData, deleteItem } = useEntregas(); // Asegúrate de que deleteItem esté disponible en el contexto
-  const { currentUser } = useAuth();
+  const [data, setData] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [sortConfig, setSortConfig] = useState({ key: 'Proveedor', direction: 'ascending' });
   const [expandedRows, setExpandedRows] = useState({});
-  const [localData, setLocalData] = useState([]);
-  const [dailySortConfig, setDailySortConfig] = useState({ key: 'Fecha', direction: 'ascending' });
 
   const valoresFijos = {
     cainiao: 800,
     nacional: 900,
-    pyme: 1500,
+    PYME: 1500,
     retiro: 800
   };
 
   const coloresProveedores = {
     cainiao: 'red',
     nacional: 'blue',
-    pyme: 'green',
+    PYME: 'green',
     retiro: 'orange'
   };
 
   useEffect(() => {
-    if (selectedMonth && currentUser) {
-      fetchUserData(currentUser.uid); // Asegúrate de que esta función obtenga los datos del mes seleccionado
-    }
-  }, [selectedMonth, currentUser]);
+    const fetchData = async () => {
+      try {
+        const snapshot = await firestoreDB.collection("entregas")
+          .where("Fecha", ">=", `${selectedMonth}-01`)
+          .where("Fecha", "<", `${selectedMonth}-31`)
+          .get();
+        const fetchedData = snapshot.docs.map(doc => doc.data());
+        console.log("Datos obtenidos del servidor:", fetchedData);
+        setData(fetchedData);
+      } catch (error) {
+        console.error("Error al obtener los datos:", error);
+      }
+    };
 
-  useEffect(() => {
-    if (selectedMonth) {
-      const filteredData = data.filter(item => {
-        const itemMonth = new Date(item.Fecha).toISOString().slice(0, 7);
-        return itemMonth === selectedMonth;
-      });
-      setLocalData(filteredData);
-    } else {
-      setLocalData(data);
-    }
-  }, [data, selectedMonth]);
+    fetchData();
+  }, [selectedMonth]);
+
+  const handleMonthChange = (e) => {
+    setSelectedMonth(e.target.value);
+  };
 
   const handleSort = (key) => {
     let direction = 'ascending';
@@ -52,15 +52,18 @@ const TablaResumen = () => {
     setSortConfig({ key, direction });
   };
 
-  const handleDailySort = (key) => {
-    let direction = 'ascending';
-    if (dailySortConfig.key === key && dailySortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setDailySortConfig({ key, direction });
+  const handleRowClick = (date) => {
+    setExpandedRows(prevState => ({
+      ...prevState,
+      [date]: !prevState[date]
+    }));
   };
 
-  const sortedData = Object.entries(localData.reduce((acc, curr) => {
+  const handleDelete = (date) => {
+    setData(prevData => prevData.filter(item => item.Fecha.split("T")[0] !== date));
+  };
+
+  const sortedData = Object.entries(data.reduce((acc, curr) => {
     if (!acc[curr.Proveedor]) {
       acc[curr.Proveedor] = { Cantidad: 0, Valor: valoresFijos[curr.Proveedor.toLowerCase()] || 0 };
     }
@@ -80,8 +83,8 @@ const TablaResumen = () => {
     return total + (resumen.Cantidad * (valoresFijos[proveedor.toLowerCase()] || 0));
   }, 0);
 
-  const resumenDiario = Object.entries(localData.reduce((acc, curr) => {
-    const date = curr.Fecha.split("T")[0];
+  const resumenDiario = Object.entries(data.reduce((acc, curr) => {
+    const date = new Date(curr.Fecha).toLocaleDateString(); // Formatear la fecha
     const totalDiarioProveedor = curr.Cantidad * (valoresFijos[curr.Proveedor.toLowerCase()] || 0);
     if (!acc[date]) {
       acc[date] = { Cantidad: 0, TotalDiario: 0, Proveedores: {} };
@@ -93,39 +96,19 @@ const TablaResumen = () => {
     }
     acc[date].Proveedores[curr.Proveedor].Cantidad += curr.Cantidad;
     acc[date].Proveedores[curr.Proveedor].TotalDiario += totalDiarioProveedor;
-    acc[date].Proveedores[curr.Proveedor].id = curr.id; // Asegúrate de que el id del documento esté disponible
     return acc;
-  }, {})).sort((a, b) => {
-    if (a[1][dailySortConfig.key] < b[1][dailySortConfig.key]) {
-      return dailySortConfig.direction === 'ascending' ? -1 : 1;
-    }
-    if (a[1][dailySortConfig.key] > b[1][dailySortConfig.key]) {
-      return dailySortConfig.direction === 'ascending' ? 1 : -1;
-    }
-    return 0;
-  });
+  }, {}));
 
-  const toggleRow = (id) => {
-    setExpandedRows(prevState => ({
-      ...prevState,
-      [id]: !prevState[id]
-    }));
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  };
+  console.log("Resumen Diario:", resumenDiario);
 
   return (
     <div className="md:p-4 mx-12 md:mx-2">
-      <h1 className="text-xl font-bold mb-4">Resumen del Mes</h1>
       <label className="block mb-4">
         Seleccionar mes:
         <input 
           type="month" 
           value={selectedMonth} 
-          onChange={(e) => setSelectedMonth(e.target.value)} 
+          onChange={handleMonthChange} 
           className="ml-2 bg-[#111917] p-2 border rounded" 
         />
       </label>
@@ -133,18 +116,20 @@ const TablaResumen = () => {
       <table className="min-w-full bg-lime-950 rounded-xl">
         <thead>
           <tr>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleDailySort('Fecha')}>Fecha</th>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleDailySort('Cantidad')}>Cantidad</th>
+            <th className="py-2 px-4 border-b">Fecha</th>
+            <th className="py-2 px-4 border-b">Cantidad</th>
             <th className="py-2 px-4 border-b"></th>
           </tr>
         </thead>
         <tbody>
-          {resumenDiario.map(([date, resumen]) => (
+          {Object.entries(resumenDiario).map(([date, resumen]) => (
             <React.Fragment key={date}>
-              <tr className="text-center cursor-pointer" onClick={() => toggleRow(date)}>
-                <td className="py-2 px-4 border-b">{formatDate(date)}</td>
+              <tr className="text-center cursor-pointer" onClick={() => handleRowClick(date)}>
+                <td className="py-2 px-4 border-b">{date}</td>
                 <td className="py-2 px-4 border-b">{resumen.Cantidad}</td>
-                <td className="py-2 px-4 border-b"></td>
+                <td className="py-2 px-4 border-b">
+                  <button onClick={() => handleDelete(date)} className="">❌</button>
+                </td>
               </tr>
               {expandedRows[date] && (
                 <tr>
@@ -155,30 +140,20 @@ const TablaResumen = () => {
                           <th className="py-2 px-4 border-b">Proveedor</th>
                           <th className="py-2 px-4 border-b">Cantidad</th>
                           <th className="py-2 px-4 border-b">Total Diario</th>
-                          <th className="py-2 px-4 border-b"></th>
                         </tr>
                       </thead>
                       <tbody>
                         {resumen.Proveedores && Object.entries(resumen.Proveedores).map(([proveedor, detalle]) => (
-                          <tr className="text-center" key={detalle.id}>
+                          <tr className="text-center" key={proveedor}>
                             <td className="py-2 px-4 border-b">{proveedor}</td>
                             <td className="py-2 px-4 border-b">{detalle.Cantidad}</td>
-                            <td className="py-2 px-4 border-b">{detalle.TotalDiario}</td>
-                            <td className="py-2 px-4 border-b">
-                              <DeleteButton 
-                                id={detalle.id} 
-                                setLocalData={setLocalData} 
-                                fetchUserData={fetchUserData} 
-                                currentUser={currentUser} 
-                              />
-                            </td>
+                            <td className="py-2 px-4 border-b">{detalle.Cantidad * (valoresFijos[proveedor.toLowerCase()] || 0)}</td>
                           </tr>
                         ))}
                         <tr className="text-center font-bold">
                           <td className="py-2 px-4 border-b">Total Diario</td>
                           <td className="py-2 px-4 border-b">{resumen.Cantidad}</td>
                           <td className="py-2 px-4 border-b">{resumen.TotalDiario}</td>
-                          <td className="py-2 px-4 border-b"></td>
                         </tr>
                       </tbody>
                     </table>
@@ -201,6 +176,7 @@ const TablaResumen = () => {
         <tbody>
           {sortedData.map(([proveedor, resumen]) => {
             const valorTotal = resumen.Cantidad * (valoresFijos[proveedor.toLowerCase()] || 0);
+            console.log(`Proveedor: ${proveedor}, Cantidad: ${resumen.Cantidad}, Valor: ${valoresFijos[proveedor.toLowerCase()]}, Valor Total: ${valorTotal}`);
             return (
               <tr className="text-center" key={proveedor}>
                 <td className="py-2 px-4 border-b">

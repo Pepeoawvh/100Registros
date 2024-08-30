@@ -5,7 +5,6 @@ import {
   Merriweather,
   Merriweather_Sans,
   Pinyon_Script,
-  Bodoni_Moda,
 Lora,
   Kaushan_Script,
   Libre_Barcode_39_Text
@@ -35,10 +34,6 @@ export const merriweatherSans = Merriweather_Sans({
 });
 
 export const pinyonScript = Pinyon_Script({
-  weight: ["400"],
-  subsets: ["latin"],
-});
-export const Bodoni400 = Bodoni_Moda({
   weight: ["400"],
   subsets: ["latin"],
 });
