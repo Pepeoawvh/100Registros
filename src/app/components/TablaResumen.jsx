@@ -1,11 +1,10 @@
-'use client';
 import React, { useState, useEffect } from "react";
-import { useEntregas } from '../context/entregasProvider.js'; // Asegúrate de que la ruta sea correcta
-import { useAuth } from '../context/authProvider.js'; // Asegúrate de que la ruta sea correcta
+import { useEntregas } from '../context/entregasProvider.js';
+import { useAuth } from '../context/authProvider.js';
 import DeleteButton from './DeleteButton.js';
 
 const TablaResumen = () => {
-  const { data, selectedMonth, setSelectedMonth, fetchUserData, deleteItem } = useEntregas(); // Asegúrate de que deleteItem esté disponible en el contexto
+  const { data, selectedMonth, setSelectedMonth } = useEntregas();
   const { currentUser } = useAuth();
   const [sortConfig, setSortConfig] = useState({ key: 'Proveedor', direction: 'ascending' });
   const [expandedRows, setExpandedRows] = useState({});
@@ -25,12 +24,6 @@ const TablaResumen = () => {
     pyme: 'green',
     retiro: 'orange'
   };
-
-  useEffect(() => {
-    if (selectedMonth && currentUser) {
-      fetchUserData(currentUser.uid); // Asegúrate de que esta función obtenga los datos del mes seleccionado
-    }
-  }, [selectedMonth, currentUser, fetchUserData]); // Agrega fetchUserData al array de dependencias
 
   useEffect(() => {
     if (selectedMonth) {
@@ -93,7 +86,7 @@ const TablaResumen = () => {
     }
     acc[date].Proveedores[curr.Proveedor].Cantidad += curr.Cantidad;
     acc[date].Proveedores[curr.Proveedor].TotalDiario += totalDiarioProveedor;
-    acc[date].Proveedores[curr.Proveedor].id = curr.id; // Asegúrate de que el id del documento esté disponible
+    acc[date].Proveedores[curr.Proveedor].id = curr.id;
     return acc;
   }, {})).sort((a, b) => {
     if (a[1][dailySortConfig.key] < b[1][dailySortConfig.key]) {
@@ -113,8 +106,7 @@ const TablaResumen = () => {
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    return dateString.split("T")[0];
   };
 
   return (
@@ -168,7 +160,6 @@ const TablaResumen = () => {
                               <DeleteButton 
                                 id={detalle.id} 
                                 setLocalData={setLocalData} 
-                                fetchUserData={fetchUserData} 
                                 currentUser={currentUser} 
                               />
                             </td>

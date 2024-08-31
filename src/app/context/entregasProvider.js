@@ -31,10 +31,22 @@ export const EntregaProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (currentUser && !dataLoaded) {
+    console.log("useEffect triggered");
+    if (dataLoaded) {
+      console.log("Data already loaded, skipping fetch");
+      return; // Retorno temprano si los datos ya han sido cargados
+    }
+    if (currentUser) {
+      console.log("Current user:", currentUser);
       fetchUserData(currentUser.uid);
     }
   }, [currentUser, dataLoaded]);
+
+  useEffect(() => {
+    return () => {
+      setDataLoaded(false); // Limpiar el estado cuando el componente se desmonte
+    };
+  }, []);
 
   return (
     <EntregaContext.Provider value={{ data, setData, selectedMonth, setSelectedMonth, fetchUserData }}>

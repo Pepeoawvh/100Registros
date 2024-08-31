@@ -35,12 +35,13 @@ const EntregaForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!formData.Fecha || !formData.Proveedor || !formData.Cantidad) {
       setError('Todos los campos son obligatorios');
       return;
     }
-
+  
+    // Formatear la fecha usando toISOString()
     const formattedData = {
       ...formData,
       Cantidad: parseInt(formData.Cantidad, 10),
@@ -48,17 +49,17 @@ const EntregaForm = () => {
       Fecha: new Date(formData.Fecha).toISOString(),
       userId: currentUser.uid,
     };
-
+  
     console.log("Datos del formulario antes de enviar:", formattedData);
-
+  
     try {
       await firestoreDB.collection('entregas').add(formattedData);
       console.log("Datos enviados exitosamente:", formattedData);
       alert("Datos enviados exitosamente");
-
+  
       // Fetch updated data using the context method
       fetchUserData(currentUser.uid);
-
+  
       setFormData({
         Fecha: '',
         Proveedor: '',

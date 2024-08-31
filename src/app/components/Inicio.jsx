@@ -31,7 +31,7 @@ const InicioContent = () => {
           LogIn
         </button>
       ) : (
-        <Login />
+        <Login/>
       )}
     </div>
   );
