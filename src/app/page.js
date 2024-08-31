@@ -4,7 +4,10 @@ import Inicio from "./components/Inicio";
 export default function Home() {
   return (
     <>
-      <Inicio />
+    
+      <div className="h-screen">
+        <Inicio />
+      </div>
     </>
   );
 }

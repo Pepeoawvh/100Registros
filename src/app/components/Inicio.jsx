@@ -20,7 +20,7 @@ const InicioContent = () => {
   };
 
   return (
-    <div className='animate-fade animate-once animate-duration-3000 grid justify-items-center text-yellow-600'>
+    <div className='animate-fade animate-once animate-duration-2000 grid justify-items-center text-yellow-600'>
       <h1 className={` ${LibreBarcode.className} md:text-9xl text-6xl font-bold text-center`}>100 Registros</h1>
 
       {!showLogin ? (

@@ -29,8 +29,8 @@ const Login = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid text-center border-yellow-600 text-yellow-600 h-full gap-4 border-2  mt-8 p-6 rounded-lg shadow-md">
-      <div className="">
+    <form onSubmit={handleSubmit} className="grid text-center border-yellow-600 text-yellow-600 h-full gap-4 border-2  m-4 p-6 rounded-lg shadow-md">
+      <div>
         <label htmlFor="email" className="block font-bold mb-2">Email:</label>
         <input
           type="email"
