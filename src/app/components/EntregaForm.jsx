@@ -84,7 +84,7 @@ const EntregaForm = () => {
         name="Fecha"
         value={formData.Fecha}
         onChange={handleChange}
-        className="bg-[#25312e] text-center rounded-xl focus:ring-1 focus:ring-[#4b655d] focus:outline-none"
+        className="bg-[#25312e] w-full text-center rounded-xl focus:ring-1 focus:ring-[#4b655d] focus:outline-none"
       />
 
       <label htmlFor="proveedor">Proveedor:</label>

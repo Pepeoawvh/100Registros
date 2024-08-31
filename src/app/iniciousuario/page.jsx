@@ -44,7 +44,7 @@ const InicioUsuario = () => {
 
   return (
     <div className=' text-yellow-500 grid md:grid-cols-3 auto-rows-min justify-center md:m-8 bg-[#111917] m-2 rounded-xl'>
-      <div className="grid auto-rows-min gap-2 border-4 border-[#49655d] rounded-xl col-span-1 flex-col items-center justify-center p-12 mx-12 my-12 justify-items-center">
+      <div className="grid auto-rows-min gap-2 border-4 border-[#49655d] rounded-xl col-span-1 flex-col items-center justify-center p-12 md:mx-12 mx-4 my-12 justify-items-center">
         <h1 className={` ${LibreBarcode.className} text-6xl font-bold text-center`}>100 Registros</h1>
         <h3 className="text-center font-bold mb-8">Bienvenido, {user.email}</h3>
         <EntregaForm />
@@ -52,7 +52,7 @@ const InicioUsuario = () => {
       <div className="grid md:col-span-2 text-center md:mt-12 mt-16">
         <TablaResumen />
       </div>
-      <button onClick={handleLogout} className="mt-4 p-2 bg-red-500 text-white rounded">Cerrar sesión</button>
+      <div className='grid justify-items-center'><button onClick={handleLogout} className="mt-4 p-2 bg-yellow-600 w-1/2  text-white rounded">Cerrar sesión</button></div>
     </div>
   );
 };

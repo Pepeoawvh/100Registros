@@ -110,15 +110,15 @@ const TablaResumen = () => {
   };
 
   return (
-    <div className="md:p-4 mx-12 md:mx-2">
+    <div className="md:p-4 mx-8 md:mx-2">
       <h1 className="text-xl font-bold mb-4">Resumen del Mes</h1>
       <label className="block mb-4">
-        Seleccionar mes:
+        Mes:
         <input 
           type="month" 
           value={selectedMonth} 
           onChange={(e) => setSelectedMonth(e.target.value)} 
-          className="ml-2 bg-[#111917] p-2 border rounded" 
+          className="ml-2 bg-[#111917] p-2 border rounded w-auto" 
         />
       </label>
       <h2 className="text-xl font-bold mb-4">Resumen Diario</h2>
