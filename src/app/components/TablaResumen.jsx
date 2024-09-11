@@ -134,7 +134,7 @@ const TablaResumen = () => {
           type="month" 
           value={selectedMonth} 
           onChange={(e) => setSelectedMonth(e.target.value)} 
-          className="ml-2 bg-[#111917] p-2 border rounded w-auto" 
+          className="ml-2  p-2 border rounded w-auto border-[#3d4f4a]" 
         />
       </label>
       <h2 className="text-xl font-bold mb-4">Resumen Diario</h2>
