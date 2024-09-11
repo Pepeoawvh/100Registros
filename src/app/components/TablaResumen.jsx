@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useEntregas } from '../context/entregasProvider.js';
 import { useAuth } from '../context/authProvider.js';
 import DeleteButton from './DeleteButton.js';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const TablaResumen = () => {
   const { data, selectedMonth, setSelectedMonth } = useEntregas();
@@ -10,6 +12,7 @@ const TablaResumen = () => {
   const [expandedRows, setExpandedRows] = useState({});
   const [localData, setLocalData] = useState([]);
   const [dailySortConfig, setDailySortConfig] = useState({ key: 'Fecha', direction: 'ascending' });
+  const tableRef = useRef();
 
   const valoresFijos = {
     cainiao: 800,
@@ -109,9 +112,22 @@ const TablaResumen = () => {
     return dateString.split("T")[0];
   };
 
+  const downloadPDF = () => {
+    const input = tableRef.current;
+    html2canvas(input, { scale: 3 }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save("tabla_resumen.pdf");
+    });
+  };
+
   return (
-    <div className="md:p-4 mx-8 md:mx-2">
-      <h1 className="text-xl font-bold mb-4">Resumen del Mes</h1>
+    <div ref={tableRef} className="md:p-4 mx-8 md:mx-2">
+      <h1 className="text-xl font-bold mb-4">Resumen</h1>
       <label className="block mb-4">
         Mes:
         <input 
@@ -122,92 +138,102 @@ const TablaResumen = () => {
         />
       </label>
       <h2 className="text-xl font-bold mb-4">Resumen Diario</h2>
-      <table className="min-w-full bg-lime-950 rounded-xl">
-        <thead>
-          <tr>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleDailySort('Fecha')}>Fecha</th>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleDailySort('Cantidad')}>Cantidad</th>
-            <th className="py-2 px-4 border-b"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {resumenDiario.map(([date, resumen]) => (
-            <React.Fragment key={date}>
-              <tr className="text-center cursor-pointer" onClick={() => toggleRow(date)}>
-                <td className="py-2 px-4 border-b">{formatDate(date)}</td>
-                <td className="py-2 px-4 border-b">{resumen.Cantidad}</td>
-                <td className="py-2 px-4 border-b"></td>
-              </tr>
-              {expandedRows[date] && (
-                <tr>
-                  <td colSpan="3">
-                    <table className="min-w-full bg-lime-900 mt-2">
-                      <thead>
-                        <tr>
-                          <th className="py-2 px-4 border-b">Proveedor</th>
-                          <th className="py-2 px-4 border-b">Cantidad</th>
-                          <th className="py-2 px-4 border-b">Total Diario</th>
-                          <th className="py-2 px-4 border-b"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {resumen.Proveedores && Object.entries(resumen.Proveedores).map(([proveedor, detalle]) => (
-                          <tr className="text-center" key={detalle.id}>
-                            <td className="py-2 px-4 border-b">{proveedor}</td>
-                            <td className="py-2 px-4 border-b">{detalle.Cantidad}</td>
-                            <td className="py-2 px-4 border-b">{detalle.TotalDiario}</td>
-                            <td className="py-2 px-4 border-b">
-                              <DeleteButton 
-                                id={detalle.id} 
-                                setLocalData={setLocalData} 
-                                currentUser={currentUser} 
-                              />
-                            </td>
-                          </tr>
-                        ))}
-                        <tr className="text-center font-bold">
-                          <td className="py-2 px-4 border-b">Total Diario</td>
-                          <td className="py-2 px-4 border-b">{resumen.Cantidad}</td>
-                          <td className="py-2 px-4 border-b">{resumen.TotalDiario}</td>
-                          <td className="py-2 px-4 border-b"></td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </td>
+      <div ref={tableRef}>
+        <table className="min-w-full bg-lime-950 rounded-xl">
+          <thead>
+            <tr>
+              <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleDailySort('Fecha')}>Fecha</th>
+              <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleDailySort('Cantidad')}>Cantidad</th>
+              <th className="py-2 px-4 border-b"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {resumenDiario.map(([date, resumen]) => (
+              <React.Fragment key={date}>
+                <tr className="text-center cursor-pointer" onClick={() => toggleRow(date)}>
+                  <td className="py-2 px-4 border-b">{formatDate(date)}</td>
+                  <td className="py-2 px-4 border-b">{resumen.Cantidad}</td>
+                  <td className="py-2 px-4 border-b"></td>
                 </tr>
-              )}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-      <h2 className="text-xl font-bold mt-8 mb-4">Resumen Mensual</h2>
-      <table className="min-w-full bg-lime-950 rounded-xl">
-        <thead>
-          <tr>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('Proveedor')}>Proveedor</th>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('Cantidad')}>Cantidad Total</th>
-            <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('Valor')}>Valor Total Tipo</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedData.map(([proveedor, resumen]) => {
-            const valorTotal = resumen.Cantidad * (valoresFijos[proveedor.toLowerCase()] || 0);
-            return (
-              <tr className="text-center" key={proveedor}>
-                <td className="py-2 px-4 border-b">
-                  <span style={{ backgroundColor: coloresProveedores[proveedor.toLowerCase()], borderRadius: '50%', display: 'inline-block', width: '10px', height: '10px', marginRight: '8px' }}></span>
-                  {proveedor}
-                </td>
-                <td className="py-2 px-4 border-b">{resumen.Cantidad}</td>
-                <td className="py-2 px-4 border-b">{valorTotal}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <div className="mt-4 text-right">
-        <h3 className="text-lg font-bold text-center mb-4">TOTAL MENSUAL: {totalMensual}</h3>
+                {expandedRows[date] && (
+                  <tr>
+                    <td colSpan="3">
+                      <table className="min-w-full bg-lime-900 mt-2">
+                        <thead>
+                          <tr>
+                            <th className="py-2 px-4 border-b">Proveedor</th>
+                            <th className="py-2 px-4 border-b">Cantidad</th>
+                            <th className="py-2 px-4 border-b">Total Diario</th>
+                            <th className="py-2 px-4 border-b"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {resumen.Proveedores && Object.entries(resumen.Proveedores).map(([proveedor, detalle]) => (
+                            <tr className="text-center" key={detalle.id}>
+                              <td className="py-2 px-4 border-b">{proveedor}</td>
+                              <td className="py-2 px-4 border-b">{detalle.Cantidad}</td>
+                              <td className="py-2 px-4 border-b">{detalle.TotalDiario}</td>
+                              <td className="py-2 px-4 border-b">
+                                <DeleteButton 
+                                  id={detalle.id} 
+                                  setLocalData={setLocalData} 
+                                  currentUser={currentUser} 
+                                />
+                              </td>
+                            </tr>
+                          ))}
+                          <tr className="text-center font-bold">
+                            <td className="py-2 px-4 border-b">Total Diario</td>
+                            <td className="py-2 px-4 border-b">{resumen.Cantidad}</td>
+                            <td className="py-2 px-4 border-b">{resumen.TotalDiario}</td>
+                            <td className="py-2 px-4 border-b"></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+        <h2 className="text-xl font-bold mt-8 mb-4">Resumen Mensual</h2>
+        <table className="min-w-full bg-lime-950 rounded-xl">
+          <thead>
+            <tr>
+              <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('Proveedor')}>Proveedor</th>
+              <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('Cantidad')}>Cantidad Total</th>
+              <th className="py-2 px-4 border-b cursor-pointer" onClick={() => handleSort('Valor')}>Valor Total Tipo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedData.map(([proveedor, resumen]) => {
+              const valorTotal = resumen.Cantidad * (valoresFijos[proveedor.toLowerCase()] || 0);
+              return (
+                <tr className="text-center" key={proveedor}>
+                  <td className="py-2 px-4 border-b">
+                    <span style={{ backgroundColor: coloresProveedores[proveedor.toLowerCase()], borderRadius: '50%', display: 'inline-block', width: '10px', height: '10px', marginRight: '8px' }}></span>
+                    {proveedor}
+                  </td>
+                  <td className="py-2 px-4 border-b">{resumen.Cantidad}</td>
+                  <td className="py-2 px-4 border-b">{valorTotal}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <div className="grid justify-items-start mt-4 pl-4 ">
+          <h3 className="text-lg font-bold text-center mb-4  justify-self-center border-2 px-4 pb-2 pt-2  border-yellow-400 rounded-xl">TOTAL: {totalMensual}</h3>
+          <h3 className="text-lg font-bold text-center mb-4">IVA: {totalMensual * 0.19}</h3>
+          <h3 className="text-lg font-bold text-center">TOTAL CON IVA: {totalMensual * 1.19}</h3>
+        </div>
       </div>
+      <button 
+        onClick={downloadPDF} 
+        className="mt-4 border-2 border-[#3d4f4a] mb-12 text-white py-2 px-4 rounded"
+      >
+        Descargar PDF de estado actual
+      </button>
     </div>
   );
 };
