@@ -14,18 +14,11 @@ const TablaResumen = () => {
   const [dailySortConfig, setDailySortConfig] = useState({ key: 'Fecha', direction: 'ascending' });
   const tableRef = useRef();
 
-  const valoresFijos = {
-    cainiao: 800,
-    nacional: 900,
-    pyme: 1500,
-    retiro: 800
-  };
-
   const coloresProveedores = {
-    cainiao: 'red',
-    nacional: 'blue',
-    pyme: 'green',
-    retiro: 'orange'
+    'cainiao 99': 'red',
+    'nac.99': 'blue',
+    'reco99': 'green',
+    'tg': 'orange'
   };
 
   useEffect(() => {
@@ -57,10 +50,14 @@ const TablaResumen = () => {
   };
 
   const sortedData = Object.entries(localData.reduce((acc, curr) => {
-    if (!acc[curr.Proveedor]) {
-      acc[curr.Proveedor] = { Cantidad: 0, Valor: valoresFijos[curr.Proveedor.toLowerCase()] || 0 };
+    if (curr.Proveedor) {
+      const proveedorKey = curr.Proveedor.toLowerCase();
+      if (!acc[proveedorKey]) {
+        acc[proveedorKey] = { Cantidad: 0, Valor: 0 };
+      }
+      acc[proveedorKey].Cantidad += curr.Cantidad;
+      acc[proveedorKey].Valor += curr.Cantidad * curr.Valor;
     }
-    acc[curr.Proveedor].Cantidad += curr.Cantidad;
     return acc;
   }, {})).sort((a, b) => {
     if (a[1][sortConfig.key] < b[1][sortConfig.key]) {
@@ -73,23 +70,26 @@ const TablaResumen = () => {
   });
 
   const totalMensual = sortedData.reduce((total, [proveedor, resumen]) => {
-    return total + (resumen.Cantidad * (valoresFijos[proveedor.toLowerCase()] || 0));
+    return total + resumen.Valor;
   }, 0);
 
   const resumenDiario = Object.entries(localData.reduce((acc, curr) => {
     const date = curr.Fecha.split("T")[0];
-    const totalDiarioProveedor = curr.Cantidad * (valoresFijos[curr.Proveedor.toLowerCase()] || 0);
-    if (!acc[date]) {
-      acc[date] = { Cantidad: 0, TotalDiario: 0, Proveedores: {} };
+    if (curr.Proveedor) {
+      const proveedorKey = curr.Proveedor.toLowerCase();
+      const totalDiarioProveedor = curr.Cantidad * curr.Valor;
+      if (!acc[date]) {
+        acc[date] = { Cantidad: 0, TotalDiario: 0, Proveedores: {} };
+      }
+      acc[date].Cantidad += curr.Cantidad;
+      acc[date].TotalDiario += totalDiarioProveedor;
+      if (!acc[date].Proveedores[proveedorKey]) {
+        acc[date].Proveedores[proveedorKey] = { Cantidad: 0, TotalDiario: 0 };
+      }
+      acc[date].Proveedores[proveedorKey].Cantidad += curr.Cantidad;
+      acc[date].Proveedores[proveedorKey].TotalDiario += totalDiarioProveedor;
+      acc[date].Proveedores[proveedorKey].id = curr.id;
     }
-    acc[date].Cantidad += curr.Cantidad;
-    acc[date].TotalDiario += totalDiarioProveedor;
-    if (!acc[date].Proveedores[curr.Proveedor]) {
-      acc[date].Proveedores[curr.Proveedor] = { Cantidad: 0, TotalDiario: 0 };
-    }
-    acc[date].Proveedores[curr.Proveedor].Cantidad += curr.Cantidad;
-    acc[date].Proveedores[curr.Proveedor].TotalDiario += totalDiarioProveedor;
-    acc[date].Proveedores[curr.Proveedor].id = curr.id;
     return acc;
   }, {})).sort((a, b) => {
     if (a[1][dailySortConfig.key] < b[1][dailySortConfig.key]) {
@@ -208,7 +208,6 @@ const TablaResumen = () => {
           </thead>
           <tbody>
             {sortedData.map(([proveedor, resumen]) => {
-              const valorTotal = resumen.Cantidad * (valoresFijos[proveedor.toLowerCase()] || 0);
               return (
                 <tr className="text-center" key={proveedor}>
                   <td className="py-2 px-4 border-b">
@@ -216,7 +215,7 @@ const TablaResumen = () => {
                     {proveedor}
                   </td>
                   <td className="py-2 px-4 border-b">{resumen.Cantidad}</td>
-                  <td className="py-2 px-4 border-b">{valorTotal}</td>
+                  <td className="py-2 px-4 border-b">{resumen.Valor}</td>
                 </tr>
               );
             })}
