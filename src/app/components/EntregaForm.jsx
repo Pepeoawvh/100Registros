@@ -72,7 +72,7 @@ const EntregaForm = () => {
       <div className="grid gap-3 justify-items-center">
         <label className='grid border-t-2 border-[#4b655d] mt-2 pt-2 '>Entregas de hoy</label>
         <div className="grid grid-cols-4 gap-4 ">
-          {['Cainiao 99', 'Nac.99','Reco99', 'TG' ].map((prov) => {
+          {['Cainiao 99', 'Nac.99', 'Reco99', 'TG', 'Essika'].map((prov) => {
             const isSelected = proveedores.some((p) => p.proveedor === prov);
             return (
               <button
@@ -127,4 +127,4 @@ const EntregaForm = () => {
   );
 };
 
-export default EntregaForm; 
+export default EntregaForm;
